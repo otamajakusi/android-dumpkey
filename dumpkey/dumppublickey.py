@@ -98,14 +98,14 @@ def print_rsa(pubkey):
     B = 2 ** 32
     N0inv = int(B - findModInverse(N, B))
 
-    result += "uint32_t rsa_n0inv = "
+    result += "const uint32_t rsa_n0inv = "
     result += hex(N0inv)
     result += ";\n\n"
 
     R = 2 ** N.bit_length()
     RR = (R * R) % N  #2^4096 mod N
 
-    result += "uint32_t rsa_N[] = {\n\t"
+    result += "const uint32_t rsa_N[] = {\n\t"
 
     # Write out modulus as `big` endian array of integers.
     N_big = int.from_bytes(N.to_bytes(key_bit_length // 8, 'little'), 'big')
@@ -126,7 +126,7 @@ def print_rsa(pubkey):
     result += "};\n\n"
 
     # Write R^2 as `big` endian array of integers.
-    result += "uint32_t rsa_rr[] = {\n\t"
+    result += "const uint32_t rsa_rr[] = {\n\t"
 
     RR_big = int.from_bytes(RR.to_bytes(key_bit_length // 8, 'little'), 'big')
     for i in range(0, nwords):
