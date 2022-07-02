@@ -19,6 +19,7 @@ import sys
 import os
 import traceback
 from dumpkey import dumppublickey
+unistr = str if sys.version_info >= (3, 0) else unicode
 if __name__ == "__main__":
     if len(sys.argv) < 2:
         sys.stderr.write("Usage: DumpPublicKey certfile ... > source.c\n")
@@ -30,7 +31,7 @@ if __name__ == "__main__":
             if not os.path.exists(curr):
                 sys.stderr.write("%s does not exits!" % curr)
                 sys.exit(1)
-            out.append(dumppublickey.print_rsa(unicode(curr)))
+            out.append(dumppublickey.print_rsa(unistr(curr)))
 
         print(",\n".join(out))
 

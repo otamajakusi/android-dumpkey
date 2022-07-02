@@ -86,48 +86,62 @@ def print_rsa(pubkey):
 
     N = pubkey.public_numbers().n
     result = ""
+    key_bit_length = N.bit_length()
 
-    nwords = N.bit_length() / 32 # of 32 bit integers in modulus
+    nwords = N.bit_length() // 32 # of 32 bit integers in modulus
 
+    '''
     result += "{"
     result += str(nwords)
+    '''
 
     B = 2 ** 32
     N0inv = int(B - findModInverse(N, B))
 
-    result += ","
+    result += "uint32_t rsa_n0inv = "
     result += hex(N0inv)
+    result += ";\n\n"
 
     R = 2 ** N.bit_length()
     RR = (R * R) % N  #2^4096 mod N
 
-    result += ",{"
+    result += "uint32_t rsa_N[] = {\n\t"
 
-    # Write out modulus as little endian array of integers.
+    # Write out modulus as `big` endian array of integers.
+    N_big = int.from_bytes(N.to_bytes(key_bit_length // 8, 'little'), 'big')
     for i in range(0, nwords):
-        n = N % B
-        result += str(n)
+        n = N_big % B
+        result += f"0x{n:08x}"
 
         if i != nwords - 1:
             result += ","
+        if (i + 1) % 4 == 0:
+            if (i + 1) != nwords:
+                result += "\n\t"
+            else:
+                result += "\n"
 
-        N = N / B
+        N_big = N_big // B
 
-    result += "}"
+    result += "};\n\n"
 
-    # Write R^2 as little endian array of integers.
-    result += ",{"
+    # Write R^2 as `big` endian array of integers.
+    result += "uint32_t rsa_rr[] = {\n\t"
 
+    RR_big = int.from_bytes(RR.to_bytes(key_bit_length // 8, 'little'), 'big')
     for i in range(0, nwords):
-        rr = RR % B
-        result += str(rr)
+        rr = RR_big % B
+        result += f"0x{rr:08x}"
 
         if i != nwords -1:
             result += ","
+        if (i + 1) % 4 == 0:
+            if (i + 1) != nwords:
+                result += "\n\t"
+            else:
+                result += "\n"
 
-        RR = RR / B
+        RR_big = RR_big // B
 
-    result += "}"
-
-    result += "}"
+    result += "};"
     return result
